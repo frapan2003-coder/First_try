@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stima Potenza — Bici</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314171b'/%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%233a424a' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='1.6' fill='%233a424a'/%3E%3Cpath d='M17.5 5 L9.5 18 H14 L13 27 L23 13 H17 Z' fill='%23e8b84b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14171b;
+    --surface: #1c2126;
+    --surface-2: #21262c;
+    --line: #2c3339;
+    --text: #eceeef;
+    --muted: #8b939b;
+    --muted-2: #5f6870;
+    --amber: #e8b84b;
+    --amber-dim: #a98639;
+    --blue: #6e9bd1;
+    --red: #c2695a;
+    --radius: 3px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', -apple-system, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .mono{ font-family: 'JetBrains Mono', monospace; }
+
+  .page{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  header{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 22px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1{
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+  header .tag{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted-2);
+    white-space: nowrap;
+  }
+
+  .grid{
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(300px, 380px);
+    gap: 22px;
+    align-items: start;
+  }
+  @media (max-width: 860px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  section.panel{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+
+  .panel + .panel{ margin-top: 18px; }
+
+  .panel h2{
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    margin: 0 0 16px;
+    font-weight: 500;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .field-row{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .field{
+    margin-bottom: 14px;
+  }
+  .field label{
+    display:block;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .hint{
+    font-size: 11px;
+    color: var(--muted-2);
+    margin-top: 4px;
+  }
+  input[type="number"], select{
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 9px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  select{ font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; }
+  input[type="number"]:focus, select:focus{
+    outline: none;
+    border-color: var(--amber-dim);
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"]{
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .unit-field{ position: relative; }
+  .unit-field .unit{
+    position: absolute;
+    right: 10px;
+    top: 33px;
+    font-size: 11px;
+    color: var(--muted-2);
+    pointer-events: none;
+  }
+
+  details{
+    margin-top: 14px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  details summary{
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    user-select: none;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  details summary:hover{
+    border-color: var(--amber-dim);
+    background: rgba(232,184,75,0.06);
+  }
+  details[open] summary{
+    border-color: var(--amber-dim);
+    background: rgba(232,184,75,0.08);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  details summary .sub-label{
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted-2);
+    margin-top: 2px;
+  }
+  details summary::-webkit-details-marker{ display:none; }
+  details summary::after{
+    content: "▸";
+    font-size: 12px;
+    color: var(--amber);
+    transition: transform .15s ease;
+    flex: none;
+  }
+  details[open] summary::after{ transform: rotate(90deg); }
+  details .adv-body{
+    padding: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--amber-dim);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .toggle-line{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .toggle-line:last-child{ border-bottom: none; }
+  .toggle-line span.lbl{ font-size: 13px; color: var(--text); }
+  .toggle-line span.sub{ display:block; font-size: 11px; color: var(--muted-2); margin-top:2px; }
+
+  .switch{
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex: none;
+  }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{
+    position:absolute; inset:0;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    cursor:pointer;
+    transition: background .15s ease;
+  }
+  .slider::before{
+    content:"";
+    position:absolute;
+    height: 14px; width: 14px;
+    left: 2px; top: 2px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .switch input:checked + .slider{ background: rgba(232,184,75,0.15); border-color: var(--amber-dim); }
+  .switch input:checked + .slider::before{ transform: translateX(16px); background: var(--amber); }
+
+  .adv-inputs{ margin-top: 12px; }
+  .adv-inputs[data-active="false"]{ opacity: 0.35; pointer-events: none; }
+
+  button.calc{
+    width: 100%;
+    margin-top: 6px;
+    background: var(--amber);
+    color: #1a1500;
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  button.calc:hover{ background: #f0c66a; }
+  button.calc:active{ background: var(--amber-dim); }
+
+  /* results */
+  .result-panel{ position: sticky; top: 20px; }
+  .power-readout{
+    text-align: left;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .power-readout .value{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 52px;
+    font-weight: 700;
+    color: var(--amber);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .power-readout .value .unit{
+    font-size: 20px;
+    color: var(--muted);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+  .power-readout .placeholder{
+    color: var(--muted-2);
+    font-size: 15px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .power-readout .readout-secondary{
+    margin-top: 8px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .power-readout .readout-secondary strong{
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .stat-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .stat{
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+  }
+  .stat .k{ font-size: 10.5px; color: var(--muted-2); margin-bottom: 5px; }
+  .stat .v{ font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--text); }
+
+  .breakdown{
+    margin-bottom: 18px;
+  }
+  .breakdown .row{
+    display:flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line);
+    color: var(--muted);
+  }
+  .breakdown .row:last-child{ border-bottom: none; }
+  .breakdown .row .v{ font-family: 'JetBrains Mono', monospace; color: var(--text); }
+
+  .chart-wrap{ position: relative; }
+
+  .zones-result{ margin-bottom: 18px; }
+  .gauge-block + .gauge-block{ margin-top: 16px; }
+  .gauge-label{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .gauge-current{
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    font-size: 12px;
+  }
+  .gauge-track-wrap{ position: relative; padding-top: 8px; }
+  .gauge-track{
+    display: flex;
+    height: 12px;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .gauge-seg{ height: 100%; }
+  .gauge-marker{
+    position: absolute;
+    top: 0;
+    left: 0%;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid #eceeef;
+    transform: translateX(-50%);
+  }
+
+  .zone-manual-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+    margin-top: 4px;
+  }
+  .zone-manual-grid .field{ margin-bottom: 8px; }
+  .zone-manual-grid label{ font-size: 11px; }
+  .chart-wrap svg{ width: 100%; height: auto; display:block; touch-action: none; cursor: crosshair; }
+  .chart-tooltip{
+    position: absolute;
+    pointer-events: none;
+    background: #0e1013;
+    border: 1px solid var(--amber-dim);
+    border-radius: 3px;
+    padding: 4px 9px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text);
+    white-space: nowrap;
+    transform: translate(-50%, -125%);
+    display: none;
+    z-index: 5;
+  }
+  .chart-caption{ font-size: 11px; color: var(--muted-2); margin-top: 8px; }
+
+  footer{
+    margin-top: 34px;
+    font-size: 11.5px;
+    color: var(--muted-2);
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+  .compass-wrap{
+    max-width: 190px;
+    margin: 4px auto 18px;
+    text-align: center;
+  }
+  .compass-wrap svg{ width: 100%; height: auto; display:block; }
+  .compass-legend{
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 10.5px;
+    color: var(--muted);
+  }
+  .compass-legend .dot{
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  .compass-legend .dot-rider{ background: var(--amber); }
+  .compass-legend .dot-wind{ background: var(--red); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Stima Potenza in Bici</h1>
+    <div class="tag mono">MODELLO FISICO — PENDENZA / ROTOLAMENTO / AERO</div>
+  </header>
+
+  <div class="grid">
+    <!-- COLONNA INPUT -->
+    <div>
+
+      <section class="panel">
+        <h2>Ciclista &amp; percorso</h2>
+
+        <div class="toggle-line" style="margin-bottom: 14px;">
+          <div>
+            <span class="lbl">Modalità inversa</span>
+            <span class="sub">Dai la potenza obiettivo, calcolo la velocità (e il tempo su una salita)</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="inverseToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <div class="field unit-field" id="vFieldBox">
+            <label for="v">Velocità</label>
+            <input type="number" id="v" value="28" step="0.1">
+            <span class="unit">km/h</span>
+          </div>
+          <div class="field unit-field" id="targetPowerFieldBox" style="display:none;">
+            <label for="targetPower">Potenza obiettivo</label>
+            <input type="number" id="targetPower" value="200" step="1">
+            <span class="unit">W</span>
+          </div>
+          <div class="field unit-field">
+            <label for="slope">Pendenza</label>
+            <input type="number" id="slope" value="7.5" step="0.1">
+            <span class="unit">%</span>
+          </div>
+        </div>
+
+        <div class="field-row" id="climbDistanceRow" style="display:none;">
+          <div class="field unit-field">
+            <label for="climbDistance">Lunghezza salita</label>
+            <input type="number" id="climbDistance" value="" step="0.1" min="0" placeholder="opz.">
+            <span class="unit">km</span>
+          </div>
+          <div></div>
+        </div>
+        <p class="hint" id="climbDistanceHint" style="display:none; margin-top:-6px;">Lascia vuoto se vuoi solo la velocità, senza calcolare il tempo.</p>
+
+        <div class="field">
+          <label for="travelDir">Direzione di marcia</label>
+          <select id="travelDir">
+            <option value="0">N</option>
+            <option value="22.5">NNE</option>
+            <option value="45">NE</option>
+            <option value="67.5">ENE</option>
+            <option value="90" selected>E</option>
+            <option value="112.5">ESE</option>
+            <option value="135">SE</option>
+            <option value="157.5">SSE</option>
+            <option value="180">S</option>
+            <option value="202.5">SSO</option>
+            <option value="225">SO</option>
+            <option value="247.5">OSO</option>
+            <option value="270">O</option>
+            <option value="292.5">ONO</option>
+            <option value="315">NO</option>
+            <option value="337.5">NNO</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <div class="field unit-field">
+            <label for="windSpeed">Velocità vento</label>
+            <input type="number" id="windSpeed" value="0" step="0.5" min="0">
+            <span class="unit">km/h</span>
+          </div>
+          <div class="field">
+            <label for="windDir">Direzione vento (da dove soffia)</label>
+            <select id="windDir">
+              <option value="0">N</option>
+              <option value="22.5">NNE</option>
+              <option value="45">NE</option>
+              <option value="67.5">ENE</option>
+              <option value="90">E</option>
+              <option value="112.5">ESE</option>
+              <option value="135">SE</option>
+              <option value="157.5">SSE</option>
+              <option value="180">S</option>
+              <option value="202.5">SSO</option>
+              <option value="225">SO</option>
+              <option value="247.5">OSO</option>
+              <option value="270">O</option>
+              <option value="292.5">ONO</option>
+              <option value="315">NO</option>
+              <option value="337.5" selected>NNO</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint mono" id="windComponentHint" style="margin-top:-6px; margin-bottom:14px;">Componente calcolata: 0,0 km/h — assente</p>
+
+        <div class="compass-wrap">
+          <svg id="compassSvg" viewBox="0 0 200 200"></svg>
+          <div class="compass-legend">
+            <span><span class="dot dot-rider"></span>Direzione di marcia</span>
+            <span><span class="dot dot-wind"></span>Vento</span>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field unit-field">
+            <label for="bpm">Bpm</label>
+            <input type="number" id="bpm" value="" step="1" placeholder="opz.">
+            <span class="unit">bpm</span>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="field-row">
+          <div class="field unit-field">
+            <label for="mRider">Massa ciclista</label>
+            <input type="number" id="mRider" value="62" step="0.5">
+            <span class="unit">kg</span>
+          </div>
+          <div class="field unit-field">
+            <label for="mBike">Massa mezzo</label>
+            <input type="number" id="mBike" value="8.5" step="0.1">
+            <span class="unit">kg</span>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:-8px;">Bpm è solo un promemoria: non entra nel calcolo della potenza.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Attrito — stima assistita</h2>
+
+        <div class="field">
+          <label for="crrPreset">Superficie / pneumatici</label>
+          <select id="crrPreset">
+            <option value="0.003">Asfalto liscio, alta pressione — Crr 0,003</option>
+            <option value="0.006" selected>Asfalto medio, qualche imperfezione — Crr 0,006</option>
+            <option value="0.010">Asfalto rovinato / buche — Crr 0,010</option>
+            <option value="0.020">Sterrato / gravel — Crr 0,020</option>
+            <option value="manual">Valore manuale</option>
+          </select>
+          <div class="hint">Range da letteratura tecnica su pneumatici da bici: 0,002 (liscio ottimizzato) – 0,010 su asfalto, più alto su fondi sconnessi.</div>
+        </div>
+        <div class="field" id="crrManualWrap" style="display:none;">
+          <label for="crrManual">Crr manuale</label>
+          <input type="number" id="crrManual" value="0.006" step="0.001">
+        </div>
+
+        <div class="field">
+          <label for="kPreset">Posizione in sella</label>
+          <select id="kPreset">
+            <option value="0.14">Aerodinamica (basso, prese basse) — K 0,14</option>
+            <option value="0.20" selected>Normale su bici da corsa — K 0,20</option>
+            <option value="0.25">Comoda / eretta (city, MTB) — K 0,25</option>
+            <option value="manual">Valore manuale</option>
+          </select>
+          <div class="hint">K ≈ 0,5 · densità aria · CdA. I preset assumono CdA indicativi da 0,23 a 0,40 m² a livello del mare.</div>
+        </div>
+        <div class="field" id="kManualWrap" style="display:none;">
+          <label for="kManual">K manuale</label>
+          <input type="number" id="kManual" value="0.20" step="0.01">
+        </div>
+
+        <details id="advDetails">
+          <summary>
+            <span>
+              Opzioni avanzate
+              <span class="sub-label" style="display:block;">Trasmissione, densità aria, pneumatico</span>
+            </span>
+          </summary>
+          <div class="adv-body">
+
+            <div class="toggle-line">
+              <div>
+                <span class="lbl">Rendimento trasmissione</span>
+                <span class="sub">Sottrae le perdite meccaniche di catena/guarnitura</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="transToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="adv-inputs" id="transInputs" data-active="false">
+              <div class="field unit-field">
+                <label for="transEff">Rendimento trasmissione</label>
+                <input type="number" id="transEff" value="97" step="0.5">
+                <span class="unit">%</span>
+              </div>
+            </div>
+
+            <div class="toggle-line">
+              <div>
+                <span class="lbl">Densità aria variabile</span>
+                <span class="sub">Ricalcola K in base ad altitudine e temperatura</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="airToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="adv-inputs" id="airInputs" data-active="false">
+              <div class="field-row">
+                <div class="field unit-field">
+                  <label for="altitude">Altitudine</label>
+                  <input type="number" id="altitude" value="0" step="10">
+                  <span class="unit">m</span>
+                </div>
+                <div class="field unit-field">
+                  <label for="temperature">Temperatura</label>
+                  <input type="number" id="temperature" value="15" step="1">
+                  <span class="unit">°C</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="toggle-line">
+              <div>
+                <span class="lbl">Pressione pneumatico</span>
+                <span class="sub">Corregge il Crr scelto sopra in base a pressione e larghezza</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="tireToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="adv-inputs" id="tireInputs" data-active="false">
+              <div class="field-row">
+                <div class="field unit-field">
+                  <label for="tirePressure">Pressione</label>
+                  <input type="number" id="tirePressure" value="6.5" step="0.1">
+                  <span class="unit">bar</span>
+                </div>
+                <div class="field unit-field">
+                  <label for="tireWidth">Larghezza</label>
+                  <input type="number" id="tireWidth" value="25" step="1">
+                  <span class="unit">mm</span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="tireDiameter">Diametro ruota</label>
+                <select id="tireDiameter">
+                  <option value="622" selected>700c / 29" — 622 mm</option>
+                  <option value="584">650b / 27,5" — 584 mm</option>
+                  <option value="559">26" — 559 mm</option>
+                  <option value="406">20" — 406 mm</option>
+                  <option value="manual">Altro (mm da ETRTO sul fianco)</option>
+                </select>
+              </div>
+              <div class="field" id="tireDiameterManualWrap" style="display:none;">
+                <label for="tireDiameterManual">Diametro manuale</label>
+                <input type="number" id="tireDiameterManual" value="622" step="1">
+              </div>
+
+              <div class="field">
+                <label for="tireMount">Tipo di montaggio</label>
+                <select id="tireMount">
+                  <option value="1.00" selected>Camera d'aria in butile (standard)</option>
+                  <option value="0.97">Camera d'aria in lattice o TPU</option>
+                  <option value="0.95">Tubeless</option>
+                  <option value="0.93">Tubolare</option>
+                </select>
+              </div>
+
+              <p class="hint" style="margin-top:-6px;">Riferimento: 6 bar, 25 mm, ruota 622 mm, camera butile (condizioni tipiche dei Crr di base sopra). Larghezza, diametro e pressione sono di norma stampati sul fianco dello pneumatico (es. "25-622"); il fattore per diametro e montaggio è una correzione indicativa, meno consolidata in letteratura di quella per pressione. Valido su asfalto liscio/medio — su sterrato l'effetto reale si comporta diversamente.</p>
+            </div>
+
+          </div>
+        </details>
+
+        <button class="calc" id="calcBtn">Calcola potenza</button>
+      </section>
+
+      <section class="panel">
+        <h2>Fasce di sforzo (facoltativo)</h2>
+
+        <div class="toggle-line">
+          <div>
+            <span class="lbl">Fasce di potenza</span>
+            <span class="sub">Colora la potenza calcolata rispetto alla tua soglia (FTP)</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="powerZoneToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="adv-inputs" id="powerZoneInputs" data-active="false">
+          <div class="field">
+            <label for="powerZoneMode">Come la definisci</label>
+            <select id="powerZoneMode">
+              <option value="ftp" selected>Solo soglia (FTP) — stimo io le fasce</option>
+              <option value="manual">Inserisco tutte le fasce</option>
+            </select>
+          </div>
+          <div class="field unit-field" id="ftpWrap">
+            <label for="ftpValue">FTP — soglia di potenza</label>
+            <input type="number" id="ftpValue" value="200" step="1">
+            <span class="unit">W</span>
+          </div>
+          <div id="powerManualWrap" style="display:none;"></div>
+          <p class="hint">Modello a 7 zone di Coggan, come percentuale della FTP: Recupero &lt;55%, Resistenza 56–75%, Tempo 76–90%, Soglia 91–105%, VO2max 106–120%, Anaerobico 121–150%, Neuromuscolare oltre il 150%.</p>
+        </div>
+
+        <div class="toggle-line" style="margin-top: 6px;">
+          <div>
+            <span class="lbl">Fasce di frequenza cardiaca</span>
+            <span class="sub">Colora i bpm inseriti sopra rispetto alla tua soglia (LTHR)</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="hrZoneToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="adv-inputs" id="hrZoneInputs" data-active="false">
+          <div class="field">
+            <label for="hrZoneMode">Come la definisci</label>
+            <select id="hrZoneMode">
+              <option value="lthr" selected>Solo soglia (LTHR) — stimo io le fasce</option>
+              <option value="manual">Inserisco tutte le fasce</option>
+            </select>
+          </div>
+          <div class="field unit-field" id="lthrWrap">
+            <label for="lthrValue">LTHR — soglia di frequenza cardiaca</label>
+            <input type="number" id="lthrValue" value="165" step="1">
+            <span class="unit">bpm</span>
+          </div>
+          <div id="hrManualWrap" style="display:none;"></div>
+          <p class="hint">Modello a 5 zone come percentuale della LTHR (non della FC massima): Recupero &lt;68%, Resistenza 69–83%, Tempo 84–94%, Soglia 95–105%, Sopra soglia oltre il 105%. Sopra soglia la FC reagisce con ritardo, quindi qui non distingue VO2max/anaerobico/neuromuscolare come fa la potenza.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- COLONNA RISULTATI -->
+    <div class="result-panel">
+      <section class="panel">
+        <h2>Risultato</h2>
+
+        <div class="power-readout" id="readout">
+          <span class="placeholder" id="readoutPlaceholder">Compila i campi e premi «Calcola potenza».</span>
+          <span class="value" id="readoutValueWrap" style="display:none;"><span id="readoutNum">0</span><span class="unit" id="readoutUnit">W</span></span>
+          <div class="readout-secondary" id="readoutSecondary" style="display:none;"></div>
+        </div>
+
+        <div class="stat-grid" id="statGrid" style="display:none;">
+          <div class="stat"><div class="k">W/KG</div><div class="v" id="statWkg">—</div></div>
+          <div class="stat"><div class="k">SALITA+ROT.</div><div class="v" id="statGrav">—</div></div>
+          <div class="stat"><div class="k">AERODIN.</div><div class="v" id="statAero">—</div></div>
+        </div>
+
+        <div class="breakdown" id="breakdown" style="display:none;">
+          <div class="row"><span>Alpha</span><span class="v" id="bAlpha">—</span></div>
+          <div class="row"><span>Rendimento</span><span class="v" id="bEff">—</span></div>
+          <div class="row"><span>Crr / K usati</span><span class="v" id="bCoef">—</span></div>
+        </div>
+
+        <div class="zones-result" id="zonesResult" style="display:none;">
+          <div class="gauge-block" id="powerGaugeBlock" style="display:none;">
+            <div class="gauge-label"><span>Potenza</span><span class="gauge-current" id="powerGaugeCurrent">—</span></div>
+            <div class="gauge-track-wrap">
+              <div class="gauge-track" id="powerGaugeTrack"></div>
+              <div class="gauge-marker" id="powerGaugeMarker"></div>
+            </div>
+          </div>
+          <div class="gauge-block" id="hrGaugeBlock" style="display:none;">
+            <div class="gauge-label"><span>Frequenza cardiaca</span><span class="gauge-current" id="hrGaugeCurrent">—</span></div>
+            <div class="gauge-track-wrap">
+              <div class="gauge-track" id="hrGaugeTrack"></div>
+              <div class="gauge-marker" id="hrGaugeMarker"></div>
+            </div>
+            <p class="hint" id="hrGaugeEmpty" style="display:none;">Inserisci i bpm nel campo sopra per vedere la fascia.</p>
+          </div>
+        </div>
+
+        <div class="chart-wrap" id="chartWrap" style="display:none;">
+          <div class="field" style="margin-bottom:10px;">
+            <label for="chartParam">Potenza in funzione di</label>
+            <select id="chartParam">
+              <option value="pendenza" selected>Pendenza (%)</option>
+              <option value="massaMezzo">Massa del mezzo (kg)</option>
+              <option value="kAero">Posizione aerodinamica (K)</option>
+              <option value="pressione">Pressione pneumatico (bar)</option>
+              <option value="velocita">Velocità (km/h)</option>
+            </select>
+          </div>
+          <svg id="chart" viewBox="0 0 340 180" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="chart-tooltip" id="chartTooltip"></div>
+          <div class="chart-caption" id="chartCaption">A parità degli altri parametri. Il punto evidenziato è il tuo calcolo.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    Modello: P = (m_ciclista+m_mezzo)·g·v·[sin(atan(pendenza/100)) + Crr] + K·(v_vento_effettivo+v)²·v — velocità in m/s. Il vento effettivo è la proiezione del vento reale sulla direzione di marcia (vento contrario/favore); la componente laterale è mostrata solo a titolo informativo, il modello non simula la resistenza dovuta al vento laterale. Se attiva, la correzione da pneumatico scala il Crr scelto come Crr·√(6/P)·(25/larghezza)^0,3·(622/diametro)^0,5·fattore montaggio — approssimazione valida su asfalto liscio/medio, non su sterrato; il fattore di montaggio (camera/tubeless/tubolare) è indicativo, con meno letteratura consolidata di quello per pressione. Le stime di Crr e K sono indicative (letteratura tecnica), non misure dirette del tuo mezzo.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const g = 9.81;
+
+  function toggleManual(selectEl, wrapEl){
+    wrapEl.style.display = selectEl.value === 'manual' ? 'block' : 'none';
+  }
+  $('crrPreset').addEventListener('change', () => toggleManual($('crrPreset'), $('crrManualWrap')));
+  $('kPreset').addEventListener('change', () => toggleManual($('kPreset'), $('kManualWrap')));
+  $('tireDiameter').addEventListener('change', () => toggleManual($('tireDiameter'), $('tireDiameterManualWrap')));
+
+  function bindSwitch(toggleId, inputsId){
+    const t = $(toggleId), box = $(inputsId);
+    t.addEventListener('change', () => {
+      box.setAttribute('data-active', t.checked ? 'true' : 'false');
+    });
+  }
+  bindSwitch('transToggle', 'transInputs');
+  bindSwitch('airToggle', 'airInputs');
+  bindSwitch('tireToggle', 'tireInputs');
+  bindSwitch('powerZoneToggle', 'powerZoneInputs');
+  bindSwitch('hrZoneToggle', 'hrZoneInputs');
+  $('powerZoneToggle').addEventListener('change', calculate);
+  $('hrZoneToggle').addEventListener('change', calculate);
+
+  $('inverseToggle').addEventListener('change', () => {
+    const inv = $('inverseToggle').checked;
+    $('vFieldBox').style.display = inv ? 'none' : 'block';
+    $('targetPowerFieldBox').style.display = inv ? 'block' : 'none';
+    $('climbDistanceRow').style.display = inv ? 'grid' : 'none';
+    $('climbDistanceHint').style.display = inv ? 'block' : 'none';
+    $('calcBtn').textContent = inv ? 'Calcola velocità' : 'Calcola potenza';
+    calculate();
+  });
+
+  // --- Fasce di sforzo (modello di Coggan) ---
+  const POWER_ZONES = [
+    { name: 'Recupero attivo', upper: 0.55, color: '#5f6870' },
+    { name: 'Resistenza',      upper: 0.75, color: '#6e9bd1' },
+    { name: 'Tempo',           upper: 0.90, color: '#7bbf9e' },
+    { name: 'Soglia',          upper: 1.05, color: '#e8b84b' },
+    { name: 'VO2max',          upper: 1.20, color: '#e08a4b' },
+    { name: 'Anaerobico',      upper: 1.50, color: '#c2695a' },
+    { name: 'Neuromuscolare',  upper: Infinity, color: '#a83f52' }
+  ];
+  const HR_ZONES = [
+    { name: 'Recupero',      upper: 0.68, color: '#5f6870' },
+    { name: 'Resistenza',    upper: 0.83, color: '#6e9bd1' },
+    { name: 'Tempo',         upper: 0.94, color: '#7bbf9e' },
+    { name: 'Soglia',        upper: 1.05, color: '#e8b84b' },
+    { name: 'Sopra soglia',  upper: Infinity, color: '#c2695a' }
+  ];
+
+  function defaultBoundaries(zones, threshold){
+    return zones.slice(0,-1).map(z => Math.round(z.upper * threshold));
+  }
+
+  function buildManualInputs(containerId, zones, idPrefix, threshold, unit){
+    const container = $(containerId);
+    const defaults = defaultBoundaries(zones, threshold);
+    let html = '<div class="zone-manual-grid">';
+    zones.slice(0,-1).forEach((z,i)=>{
+      html += `<div class="field unit-field">
+        <label for="${idPrefix}${i}">${z.name} — fino a</label>
+        <input type="number" id="${idPrefix}${i}" value="${defaults[i]}" step="1">
+        <span class="unit">${unit}</span>
+      </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    zones.slice(0,-1).forEach((z,i)=> $(idPrefix+i).addEventListener('input', calculate));
+  }
+
+  function onZoneModeChange(modeSelId, ftpWrapId, manualWrapId, zones, idPrefix, thresholdFieldId, unit){
+    const manual = $(modeSelId).value === 'manual';
+    $(ftpWrapId).style.display = manual ? 'none' : 'block';
+    $(manualWrapId).style.display = manual ? 'block' : 'none';
+    if(manual && !$(manualWrapId).dataset.built){
+      const threshold = parseFloat($(thresholdFieldId).value) || (unit==='W' ? 200 : 165);
+      buildManualInputs(manualWrapId, zones, idPrefix, threshold, unit);
+      $(manualWrapId).dataset.built = '1';
+    }
+    calculate();
+  }
+  $('powerZoneMode').addEventListener('change', () => onZoneModeChange('powerZoneMode','ftpWrap','powerManualWrap', POWER_ZONES, 'pb', 'ftpValue', 'W'));
+  $('hrZoneMode').addEventListener('change', () => onZoneModeChange('hrZoneMode','lthrWrap','hrManualWrap', HR_ZONES, 'hb', 'lthrValue', 'bpm'));
+  $('ftpValue').addEventListener('input', calculate);
+  $('lthrValue').addEventListener('input', calculate);
+
+  function getZoneBoundaries(togglePrefix, modeSelId, thresholdFieldId, zones, idPrefix){
+    if(!$(togglePrefix).checked) return null;
+    const mode = $(modeSelId).value;
+    if(mode === 'ftp' || mode === 'lthr'){
+      const threshold = parseFloat($(thresholdFieldId).value) || 0;
+      if(!threshold) return null;
+      return defaultBoundaries(zones, threshold);
+    }
+    const boundaries = zones.slice(0,-1).map((z,i)=> parseFloat($(idPrefix+i).value));
+    if(boundaries.some(b=>!b && b!==0)) return null;
+    return boundaries;
+  }
+
+  function findZoneIndex(value, boundaries){
+    for(let i=0;i<boundaries.length;i++){ if(value <= boundaries[i]) return i; }
+    return boundaries.length;
+  }
+
+  function renderGauge(trackId, markerId, currentEl, zones, boundaries, value, unit){
+    const track = $(trackId);
+    const cap = boundaries[boundaries.length-1] * 1.25;
+    const edges = [0, ...boundaries, cap];
+    let segHtml = '';
+    for(let i=0;i<zones.length;i++){
+      const widthPct = ((edges[i+1]-edges[i]) / cap * 100).toFixed(2);
+      segHtml += `<div class="gauge-seg" style="flex:0 0 ${widthPct}%; background:${zones[i].color};" title="${zones[i].name}"></div>`;
+    }
+    track.innerHTML = segHtml;
+    const clamped = Math.max(0, Math.min(value, cap));
+    $(markerId).style.left = (clamped/cap*100).toFixed(2) + '%';
+    const zi = findZoneIndex(value, boundaries);
+    currentEl.textContent = fmt(value,0) + ' ' + unit + '  ·  ' + zones[zi].name + (value > cap ? ' (fuori scala)' : '');
+  }
+
+  function updateZonesResult(pPedals){
+    const powerB = getZoneBoundaries('powerZoneToggle','powerZoneMode','ftpValue', POWER_ZONES, 'pb');
+    const hrB = getZoneBoundaries('hrZoneToggle','hrZoneMode','lthrValue', HR_ZONES, 'hb');
+    const bpmVal = parseFloat($('bpm').value);
+
+    if(powerB){
+      $('powerGaugeBlock').style.display = 'block';
+      renderGauge('powerGaugeTrack','powerGaugeMarker',$('powerGaugeCurrent'), POWER_ZONES, powerB, pPedals, 'W');
+    } else {
+      $('powerGaugeBlock').style.display = 'none';
+    }
+
+    if(hrB){
+      $('hrGaugeBlock').style.display = 'block';
+      if(bpmVal){
+        $('hrGaugeTrack').parentElement.style.display = 'block';
+        $('hrGaugeEmpty').style.display = 'none';
+        renderGauge('hrGaugeTrack','hrGaugeMarker',$('hrGaugeCurrent'), HR_ZONES, hrB, bpmVal, 'bpm');
+      } else {
+        $('hrGaugeTrack').parentElement.style.display = 'none';
+        $('hrGaugeEmpty').style.display = 'block';
+        $('hrGaugeCurrent').textContent = '—';
+      }
+    } else {
+      $('hrGaugeBlock').style.display = 'none';
+    }
+
+    $('zonesResult').style.display = (powerB || hrB) ? 'block' : 'none';
+  }
+
+  function airDensity(altitude_m, temp_C){
+    // approssimazione barometrica + correzione temperatura (rho0 = 1.225 kg/m3 a 15°C, livello mare)
+    const rho0 = 1.225;
+    const altFactor = Math.exp(-altitude_m / 8434);
+    const tempFactor = 288.15 / (temp_C + 273.15);
+    return rho0 * altFactor * tempFactor;
+  }
+
+  function computeWindComponent(){
+    const speed = parseFloat($('windSpeed').value) || 0;
+    const windFrom = parseFloat($('windDir').value);
+    const travel = parseFloat($('travelDir').value);
+    const diffRad = (windFrom - travel) * Math.PI/180;
+    const headwind = speed * Math.cos(diffRad);   // positivo = contrario, negativo = a favore
+    const crosswind = speed * Math.sin(diffRad);  // solo informativo, non modellato nella potenza
+    return { headwind, crosswind };
+  }
+
+  function polarPoint(cx, cy, r, angleDeg){
+    const rad = angleDeg * Math.PI/180;
+    return { x: cx + r*Math.sin(rad), y: cy - r*Math.cos(rad) };
+  }
+
+  function renderCompass(){
+    const svg = $('compassSvg');
+    const cx = 100, cy = 100, rRing = 84;
+    const travelDeg = parseFloat($('travelDir').value) || 0;
+    const windDeg = parseFloat($('windDir').value) || 0;
+    const windSpeed = parseFloat($('windSpeed').value) || 0;
+
+    // ghiera con tacche ogni 22.5°, maggiori sui 4 cardinali
+    let ticks = '';
+    for(let a=0; a<360; a+=22.5){
+      const major = (a % 90 === 0);
+      const p1 = polarPoint(cx, cy, rRing, a);
+      const p2 = polarPoint(cx, cy, rRing - (major ? 10 : 5), a);
+      ticks += `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="#3a424a" stroke-width="${major?1.4:1}"/>`;
+    }
+    const labels = {N:0, E:90, S:180, O:270};
+    let cardLabels = '';
+    Object.keys(labels).forEach(k=>{
+      const p = polarPoint(cx, cy, rRing - 20, labels[k]);
+      cardLabels += `<text x="${p.x.toFixed(1)}" y="${(p.y+3).toFixed(1)}" fill="#8b939b" font-size="11" font-weight="600" font-family="Space Grotesk" text-anchor="middle">${k}</text>`;
+    });
+
+    // ciclista visto dall'alto, ruotato secondo la direzione di marcia (0° = N = verso l'alto = avanti)
+    const cyclist = `
+      <g transform="rotate(${travelDeg} ${cx} ${cy})">
+        <line x1="${cx}" y1="${cy+35}" x2="${cx}" y2="${cy-35}" stroke="#5f6870" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="${cx-3}" y="${cy+26}" width="6" height="18" rx="3" fill="#3a424a" stroke="#5f6870" stroke-width="1"/>
+        <rect x="${cx-5}" y="${cy+13}" width="10" height="7" rx="2.5" fill="#5f6870"/>
+        <ellipse cx="${cx}" cy="${cy+2}" rx="10" ry="15" fill="#6e9bd1"/>
+        <circle cx="${cx}" cy="${cy-21}" r="6.5" fill="#e8b84b" stroke="#14171b" stroke-width="1"/>
+        <rect x="${cx-13}" y="${cy-34}" width="26" height="5" rx="2.5" fill="#5f6870"/>
+        <rect x="${cx-3}" y="${cy-44}" width="6" height="18" rx="3" fill="#3a424a" stroke="#5f6870" stroke-width="1"/>
+        <path d="M ${cx-6},${cy-45} L ${cx+6},${cy-45} L ${cx},${cy-55} Z" fill="#eceeef"/>
+      </g>
+    `;
+
+    // freccia del vento: parte dal bordo nella direzione da cui soffia, punta verso il centro
+    const windOpacity = Math.max(0.35, Math.min(1, windSpeed/25));
+    const tail = polarPoint(cx, cy, rRing - 8, windDeg);
+    const head = polarPoint(cx, cy, 26, windDeg);
+    const windArrow = windSpeed > 0.05 ? `
+      <line x1="${tail.x.toFixed(1)}" y1="${tail.y.toFixed(1)}" x2="${head.x.toFixed(1)}" y2="${head.y.toFixed(1)}"
+            stroke="#c2695a" stroke-width="2" stroke-linecap="round" opacity="${windOpacity.toFixed(2)}"
+            marker-end="url(#windHead)"/>
+    ` : '';
+
+    svg.innerHTML = `
+      <defs>
+        <marker id="windHead" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 z" fill="#c2695a"/>
+        </marker>
+      </defs>
+      <circle cx="${cx}" cy="${cy}" r="${rRing}" fill="#1c2126" stroke="#2c3339" stroke-width="1"/>
+      ${ticks}
+      ${cardLabels}
+      ${cyclist}
+      ${windArrow}
+    `;
+  }
+
+  function updateWindHint(){
+    const { headwind, crosswind } = computeWindComponent();
+    const hint = $('windComponentHint');
+    if(Math.abs(headwind) < 0.05 && Math.abs(crosswind) < 0.05){
+      hint.textContent = 'Componente calcolata: 0,0 km/h — assente';
+      return;
+    }
+    const dir = headwind >= 0 ? 'contrario' : 'a favore';
+    let txt = 'Componente calcolata: ' + fmt(Math.abs(headwind),1) + ' km/h ' + dir;
+    if(Math.abs(crosswind) > 0.3){
+      txt += ' · ' + fmt(Math.abs(crosswind),1) + ' km/h laterale (non influisce sul calcolo)';
+    }
+    hint.textContent = txt;
+  }
+  ['windSpeed','windDir','travelDir'].forEach(id=>{
+    $(id).addEventListener('input', () => { updateWindHint(); renderCompass(); });
+    $(id).addEventListener('change', () => { updateWindHint(); renderCompass(); });
+  });
+
+  function getCrr(overrides){
+    overrides = overrides || {};
+    const sel = $('crrPreset').value;
+    let base = sel === 'manual' ? parseFloat($('crrManual').value) : parseFloat(sel);
+    if($('tireToggle').checked || overrides.pressure !== undefined){
+      const P_ref = 6, W_ref = 25, D_ref = 622;
+      const P = overrides.pressure !== undefined ? overrides.pressure : (parseFloat($('tirePressure').value) || P_ref);
+      const W = parseFloat($('tireWidth').value) || W_ref;
+      const dSel = $('tireDiameter').value;
+      const D = dSel === 'manual' ? (parseFloat($('tireDiameterManual').value) || D_ref) : parseFloat(dSel);
+      const mountFactor = parseFloat($('tireMount').value) || 1.00;
+      const factor = Math.sqrt(P_ref / P) * Math.pow(W_ref / W, 0.3) * Math.pow(D_ref / D, 0.5) * mountFactor;
+      base = base * factor;
+    }
+    return base;
+  }
+  function getK(){
+    const sel = $('kPreset').value;
+    let base = sel === 'manual' ? parseFloat($('kManual').value) : parseFloat(sel);
+    if($('airToggle').checked){
+      const rho = airDensity(parseFloat($('altitude').value)||0, parseFloat($('temperature').value)||15);
+      base = base * (rho / 1.225);
+    }
+    return base;
+  }
+
+  function computePower(v_kmh, wind_kmh, slopePct, mRider, mBike, crr, K){
+    const alphaRad = Math.atan(slopePct/100);
+    const v_ms = v_kmh/3.6;
+    const wind_ms = wind_kmh/3.6;
+    const pGrav = (mRider+mBike) * g * v_ms * (Math.sin(alphaRad) + crr);
+    const pAero = K * Math.pow(wind_ms + v_ms, 2) * v_ms;
+    return { pGrav, pAero, pWheel: pGrav + pAero, alphaDeg: alphaRad*180/Math.PI };
+  }
+
+  // Modalità inversa: dato P alla ruota, trova la velocità per bisezione.
+  // Valida quando la potenza richiesta cresce in modo monotono con la velocità
+  // (vero in salita/pianura; in discesa ripida con vento forte può non esserlo).
+  function solveVelocityForPower(targetPWheel, wind_kmh, slopePct, mRider, mBike, crr, K){
+    function pAt(v){ return computePower(v, wind_kmh, slopePct, mRider, mBike, crr, K).pWheel; }
+    let lo = 0, hi = 100;
+    let tries = 0;
+    while(pAt(hi) < targetPWheel && tries < 12){ hi *= 1.6; tries++; }
+    for(let i=0;i<50;i++){
+      const mid = (lo+hi)/2;
+      if(pAt(mid) < targetPWheel) lo = mid; else hi = mid;
+    }
+    return (lo+hi)/2;
+  }
+
+  function fmt(n, dec){
+    return n.toLocaleString('it-IT', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+  }
+
+  function fmtTime(hoursDecimal){
+    const totalSeconds = Math.round(hoursDecimal * 3600);
+    const h = Math.floor(totalSeconds/3600);
+    const m = Math.floor((totalSeconds%3600)/60);
+    const s = totalSeconds%60;
+    if(h > 0) return h + 'h ' + String(m).padStart(2,'0') + 'm ' + String(s).padStart(2,'0') + 's';
+    return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+
+  const readoutAnim = { raf: null, value: null, kind: null };
+
+  function showReadoutPlaceholder(msg){
+    if(readoutAnim.raf) cancelAnimationFrame(readoutAnim.raf);
+    readoutAnim.raf = null; readoutAnim.value = null; readoutAnim.kind = null;
+    $('readoutValueWrap').style.display = 'none';
+    $('readoutSecondary').style.display = 'none';
+    $('readoutPlaceholder').style.display = 'inline';
+    $('readoutPlaceholder').textContent = msg;
+  }
+
+  function animateReadout(targetValue, decimals, unit, kind){
+    $('readoutPlaceholder').style.display = 'none';
+    $('readoutValueWrap').style.display = 'inline';
+    $('readoutUnit').textContent = unit;
+
+    if(readoutAnim.raf) cancelAnimationFrame(readoutAnim.raf);
+
+    if(readoutAnim.kind !== kind || readoutAnim.value === null){
+      readoutAnim.kind = kind;
+      readoutAnim.value = targetValue;
+      $('readoutNum').textContent = fmt(targetValue, decimals);
+      return;
+    }
+
+    const from = readoutAnim.value;
+    const delta = targetValue - from;
+    const duration = 550;
+    const startTime = performance.now();
+
+    function step(now){
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const current = from + delta * eased;
+      $('readoutNum').textContent = fmt(current, decimals);
+      if(t < 1){
+        readoutAnim.raf = requestAnimationFrame(step);
+      } else {
+        readoutAnim.value = targetValue;
+        readoutAnim.raf = null;
+      }
+    }
+    readoutAnim.raf = requestAnimationFrame(step);
+  }
+
+  const CHART_AXES = {
+    pendenza:   { label: 'Pendenza',            unit: '%',    dec: 1 },
+    massaMezzo: { label: 'Massa mezzo',         unit: 'kg',   dec: 1 },
+    kAero:      { label: 'K aerodinamico',      unit: '',     dec: 3 },
+    pressione:  { label: 'Pressione pneumatico', unit: 'bar', dec: 1 },
+    velocita:   { label: 'Velocità',            unit: 'km/h', dec: 0 }
+  };
+
+  function axisRange(param, base){
+    switch(param){
+      case 'pendenza':   return [Math.max(-5, base.slope - 10), base.slope + 10];
+      case 'massaMezzo': return [Math.max(3, base.mBike - 4), base.mBike + 4];
+      case 'kAero':      return [base.K * 0.6, base.K * 1.4];
+      case 'pressione':  return [Math.max(2, base.pressure - 3), base.pressure + 3];
+      case 'velocita':
+      default:           return [Math.max(1, base.v - 15), base.v + 15];
+    }
+  }
+
+  function powerForParam(param, x, base){
+    let v = base.v, slope = base.slope, mBike = base.mBike, K = base.K, crr = base.crr;
+    if(param === 'velocita') v = x;
+    else if(param === 'pendenza') slope = x;
+    else if(param === 'massaMezzo') mBike = x;
+    else if(param === 'kAero') K = x;
+    else if(param === 'pressione') crr = getCrr({ pressure: x });
+    const r = computePower(v, base.wind, slope, base.mRider, mBike, crr, K);
+    return r.pWheel / base.effFactor;
+  }
+
+  let chartData = null;
+
+  function niceTicks(min, max, count){
+    const ticks = [];
+    for(let i=0;i<=count;i++) ticks.push(min + (max-min)*i/count);
+    return ticks;
+  }
+
+  function drawChart(base){
+    const svg = $('chart');
+    const param = $('chartParam').value;
+    const axis = CHART_AXES[param];
+    const Wsvg = 340, Hsvg = 180, padL = 40, padR = 14, padT = 14, padB = 40;
+    const [xMin, xMax] = axisRange(param, base);
+    const N = 60;
+    const pts = [];
+    for(let i=0;i<=N;i++){
+      const x = xMin + (xMax-xMin)*i/N;
+      pts.push({ x, p: powerForParam(param, x, base) });
+    }
+    const pMax = Math.max(...pts.map(p=>p.p)) * 1.1;
+    const pMin = 0;
+    const sx = x => padL + (Wsvg-padL-padR) * (x-xMin)/(xMax-xMin);
+    const sy = p => Hsvg-padB - (Hsvg-padT-padB) * (p-pMin)/(pMax-pMin);
+
+    let path = pts.map((p,i)=> (i===0?'M':'L') + sx(p.x).toFixed(1) + ',' + sy(p.p).toFixed(1)).join(' ');
+
+    const xCurrent = base.currentX[param];
+    const curP = powerForParam(param, xCurrent, base);
+
+    const xTicks = niceTicks(xMin, xMax, 4);
+    const yTicks = niceTicks(pMin, pMax, 4);
+
+    let gridLines = '';
+    let xLabels = '';
+    xTicks.forEach((t,i)=>{
+      const gx = sx(t);
+      gridLines += `<line x1="${gx.toFixed(1)}" y1="${padT}" x2="${gx.toFixed(1)}" y2="${Hsvg-padB}" stroke="#242a30" stroke-width="1"/>`;
+      const anchor = i===0 ? 'start' : (i===xTicks.length-1 ? 'end' : 'middle');
+      xLabels += `<text x="${gx.toFixed(1)}" y="${Hsvg-padB+13}" fill="#5f6870" font-size="8.5" font-family="JetBrains Mono" text-anchor="${anchor}">${t.toFixed(axis.dec)}</text>`;
+    });
+    let yLabels = '';
+    yTicks.forEach((t)=>{
+      const gy = sy(t);
+      gridLines += `<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${Wsvg-padR}" y2="${gy.toFixed(1)}" stroke="#242a30" stroke-width="1"/>`;
+      yLabels += `<text x="${padL-6}" y="${(gy+3).toFixed(1)}" fill="#5f6870" font-size="8.5" font-family="JetBrains Mono" text-anchor="end">${t.toFixed(0)}</text>`;
+    });
+
+    const axisLine = `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${Hsvg-padB}" stroke="#3a424a" stroke-width="1"/>
+                       <line x1="${padL}" y1="${Hsvg-padB}" x2="${Wsvg-padR}" y2="${Hsvg-padB}" stroke="#3a424a" stroke-width="1"/>`;
+
+    const unitLabel = `<text x="${padL}" y="10" fill="#5f6870" font-size="8.5" font-family="JetBrains Mono">W</text>
+                        <text x="${(padL+Wsvg-padR)/2}" y="${Hsvg-6}" fill="#5f6870" font-size="9" font-family="JetBrains Mono" text-anchor="middle">${axis.label}${axis.unit ? ' ('+axis.unit+')' : ''}</text>`;
+
+    svg.innerHTML = `
+      ${gridLines}
+      ${axisLine}
+      ${xLabels}
+      ${yLabels}
+      ${unitLabel}
+      <path d="${path}" fill="none" stroke="#6e9bd1" stroke-width="1.8"/>
+      <circle cx="${sx(xCurrent)}" cy="${sy(curP)}" r="4" fill="#e8b84b" stroke="#14171b" stroke-width="1.5"/>
+      <line id="hoverLine" x1="0" y1="${padT}" x2="0" y2="${Hsvg-padB}" stroke="#8b939b" stroke-width="1" stroke-dasharray="3,3" style="display:none;"/>
+      <circle id="hoverDot" cx="0" cy="0" r="3.5" fill="#fff" stroke="#6e9bd1" stroke-width="1.5" style="display:none;"/>
+      <rect id="chartOverlay" x="${padL}" y="${padT}" width="${Wsvg-padL-padR}" height="${Hsvg-padT-padB}" fill="transparent"/>
+    `;
+
+    chartData = { pts, xMin, xMax, sx, sy, axis, padL, padR, padT, padB, Wsvg, Hsvg };
+    $('chartCaption').textContent = 'Potenza in funzione di ' + axis.label.toLowerCase() + ', a parità degli altri parametri. Punto giallo = il tuo calcolo, passa il mouse (o il dito) per leggere altri valori.';
+  }
+
+  function hideChartHover(){
+    const hl = $('hoverLine'), hd = $('hoverDot'), tt = $('chartTooltip');
+    if(hl) hl.style.display = 'none';
+    if(hd) hd.style.display = 'none';
+    if(tt) tt.style.display = 'none';
+  }
+
+  function handleChartPointer(evt){
+    if(!chartData) return;
+    const svg = $('chart');
+    const rect = svg.getBoundingClientRect();
+    const clientX = evt.clientX;
+    const clientY = evt.clientY;
+    if(clientX == null) return;
+    const scale = chartData.Wsvg / rect.width;
+    let mxSvg = (clientX - rect.left) * scale;
+    const { padL, padR, Wsvg, xMin, xMax, pts, sx, sy } = chartData;
+    if(mxSvg < padL || mxSvg > Wsvg - padR){ hideChartHover(); return; }
+    let xData = xMin + (mxSvg - padL) / (Wsvg - padL - padR) * (xMax - xMin);
+    let nearest = pts[0], nd = Infinity;
+    for(const p of pts){ const d = Math.abs(p.x - xData); if(d < nd){ nd = d; nearest = p; } }
+
+    const hoverLine = $('hoverLine'), hoverDot = $('hoverDot'), tooltip = $('chartTooltip');
+    const gx = sx(nearest.x), gy = sy(nearest.p);
+    hoverLine.setAttribute('x1', gx); hoverLine.setAttribute('x2', gx);
+    hoverLine.style.display = 'block';
+    hoverDot.setAttribute('cx', gx); hoverDot.setAttribute('cy', gy);
+    hoverDot.style.display = 'block';
+
+    const container = svg.parentElement.getBoundingClientRect();
+    const pxPerUnitX = rect.width / chartData.Wsvg;
+    const pxPerUnitY = rect.height / chartData.Hsvg;
+    const leftPx = (rect.left - container.left) + gx * pxPerUnitX;
+    const topPx = (rect.top - container.top) + gy * pxPerUnitY;
+    tooltip.style.left = leftPx + 'px';
+    tooltip.style.top = Math.max(18, topPx) + 'px';
+    tooltip.style.display = 'block';
+    tooltip.textContent = fmt(nearest.x, chartData.axis.dec) + (chartData.axis.unit ? ' ' + chartData.axis.unit : '') + '  →  ' + fmt(nearest.p, 0) + ' W';
+  }
+
+  $('chart').addEventListener('pointermove', handleChartPointer);
+  $('chart').addEventListener('pointerdown', handleChartPointer);
+  $('chart').addEventListener('pointerleave', hideChartHover);
+
+  function calculate(){
+    const inverseMode = $('inverseToggle').checked;
+    const wind = computeWindComponent().headwind;
+    const slope = parseFloat($('slope').value) || 0;
+    const mRider = parseFloat($('mRider').value);
+    const mBike = parseFloat($('mBike').value) || 0;
+    const crr = getCrr();
+    const K = getK();
+    const transOn = $('transToggle').checked;
+    const eff = transOn ? (parseFloat($('transEff').value) || 100) : 100;
+    const effFactor = eff/100;
+
+    let v, r, pPedals, timeHours = null;
+
+    if(inverseMode){
+      const targetPower = parseFloat($('targetPower').value);
+      if(!targetPower || !mRider){
+        showReadoutPlaceholder('Inserisci almeno la potenza obiettivo e la massa ciclista.');
+        $('statGrid').style.display = 'none';
+        $('breakdown').style.display = 'none';
+        $('zonesResult').style.display = 'none';
+        $('chartWrap').style.display = 'none';
+        return;
+      }
+      const targetPWheel = targetPower * effFactor;
+      v = solveVelocityForPower(targetPWheel, wind, slope, mRider, mBike, crr, K);
+      r = computePower(v, wind, slope, mRider, mBike, crr, K);
+      pPedals = targetPower;
+      const dist = parseFloat($('climbDistance').value);
+      if(dist > 0 && v > 0) timeHours = dist / v;
+    } else {
+      v = parseFloat($('v').value);
+      if(!v || !mRider){
+        showReadoutPlaceholder('Inserisci almeno velocità e massa ciclista.');
+        $('statGrid').style.display = 'none';
+        $('breakdown').style.display = 'none';
+        $('zonesResult').style.display = 'none';
+        $('chartWrap').style.display = 'none';
+        return;
+      }
+      r = computePower(v, wind, slope, mRider, mBike, crr, K);
+      pPedals = r.pWheel / effFactor;
+    }
+
+    if(inverseMode){
+      animateReadout(v, 1, 'km/h', 'velocity');
+      if(timeHours !== null){
+        $('readoutSecondary').style.display = 'block';
+        $('readoutSecondary').innerHTML = `Tempo sulla salita: <strong>${fmtTime(timeHours)}</strong>`;
+      } else {
+        $('readoutSecondary').style.display = 'none';
+      }
+    } else {
+      animateReadout(pPedals, 0, 'W', 'power');
+      $('readoutSecondary').style.display = 'none';
+    }
+
+    $('statGrid').style.display = 'grid';
+    $('statWkg').textContent = fmt(pPedals/mRider, 2);
+    $('statGrav').textContent = fmt(r.pGrav,0) + ' W';
+    $('statAero').textContent = fmt(r.pAero,0) + ' W';
+
+    $('breakdown').style.display = 'block';
+    $('bAlpha').textContent = fmt(r.alphaDeg,2) + '°';
+    $('bEff').textContent = transOn ? eff.toFixed(1)+'%' : '100%';
+    $('bCoef').textContent = 'Crr ' + crr.toFixed(3) + ' · K ' + K.toFixed(3);
+
+    updateZonesResult(pPedals);
+
+    $('chartWrap').style.display = 'block';
+    const pressureVal = parseFloat($('tirePressure').value) || 6;
+    drawChart({
+      v, wind, slope, mRider, mBike, crr, K, effFactor,
+      pressure: pressureVal,
+      currentX: { pendenza: slope, massaMezzo: mBike, kAero: K, pressione: pressureVal, velocita: v }
+    });
+  }
+
+  $('calcBtn').addEventListener('click', calculate);
+  $('chartParam').addEventListener('change', calculate);
+
+  function syncPressureChartOption(){
+    const opt = $('chartParam').querySelector('option[value="pressione"]');
+    const active = $('tireToggle').checked;
+    opt.disabled = !active;
+    opt.textContent = active ? 'Pressione pneumatico (bar)' : 'Pressione pneumatico (attiva prima l\'opzione avanzata)';
+    if(!active && $('chartParam').value === 'pressione'){
+      $('chartParam').value = 'pendenza';
+    }
+  }
+  $('tireToggle').addEventListener('change', () => { syncPressureChartOption(); calculate(); });
+  syncPressureChartOption();
+
+  document.querySelectorAll('input[type="number"]').forEach(inp=>{
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ calculate(); } });
+  });
+
+  // primo calcolo con i valori di default
+  updateWindHint();
+  renderCompass();
+  calculate();
+})();
+</script>
+
+</body>
+</html>
