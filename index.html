@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stima Potenza Bici | Calcolatore Watt per Ciclisti Online</title>
-<meta name="description" content="Calcola e stima la potenza in bici (Watt) nel modo più completo e gratuito. Inserisci velocità, pendenza, peso e altro ancora per scoprire le tue prestazioni nel ciclismo.">
+<title>Calcolatore Potenza Bici — Stima Watt in Salita</title>
+<meta name="description" content="Calcolatore gratuito di potenza in bici: stima i watt necessari in salita, pianura o controvento in base a pendenza, peso, vento e pneumatici. Calcola anche velocità, tempo, lavoro e calorie.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314171b'/%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%233a424a' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='1.6' fill='%233a424a'/%3E%3Cpath d='M17.5 5 L9.5 18 H14 L13 27 L23 13 H17 Z' fill='%23e8b84b'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -106,6 +106,62 @@
     font-size: 12.5px;
     color: var(--muted);
     margin-bottom: 6px;
+  }
+  .label-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .label-row label{
+    margin-bottom: 0;
+  }
+  .info-tip{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    flex: none;
+    border-radius: 50%;
+    border: 1px solid var(--muted-2);
+    background: transparent;
+    color: var(--muted-2);
+    font-size: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1;
+    padding: 0;
+    cursor: help;
+  }
+  .info-tip:hover, .info-tip:focus, .info-tip.open{
+    border-color: var(--amber-dim);
+    color: var(--amber);
+    outline: none;
+  }
+  .info-tip .info-bubble{
+    position: absolute;
+    z-index: 30;
+    right: 0;
+    left: auto;
+    top: 20px;
+    width: 200px;
+    background: #0e1013;
+    border: 1px solid var(--amber-dim);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--text);
+    font-weight: 400;
+    text-align: left;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    display: none;
+  }
+  .info-tip:hover .info-bubble,
+  .info-tip:focus .info-bubble,
+  .info-tip.open .info-bubble{
+    display: block;
   }
   .hint{
     font-size: 11px;
@@ -441,7 +497,7 @@
         <div class="toggle-line" style="margin-bottom: 14px;">
           <div>
             <span class="lbl">Modalità inversa</span>
-            <span class="sub">Dai la potenza obiettivo, calcolo la velocità (e il tempo su una salita)</span>
+            <span class="sub">Parti da potenza o da tempo obiettivo invece che dalla velocità</span>
           </div>
           <label class="switch">
             <input type="checkbox" id="inverseToggle">
@@ -449,36 +505,84 @@
           </label>
         </div>
 
+        <div class="field" id="inverseSubModeWrap" style="display:none; margin-bottom:14px;">
+          <div class="label-row">
+            <label for="inverseSubMode">Modalità inversa: calcola da</label>
+            <button type="button" class="info-tip" aria-label="Informazioni sul campo Modalità inversa">?
+              <span class="info-bubble">Scegli se partire dalla potenza che vuoi tenere (ottieni velocità e tempo) o dal tempo in cui vuoi completare il tratto (ottieni potenza e velocità).</span>
+            </button>
+          </div>
+          <select id="inverseSubMode">
+            <option value="power" selected>Potenza obiettivo → velocità e tempo</option>
+            <option value="time">Tempo obiettivo → potenza e velocità</option>
+          </select>
+        </div>
+
         <div class="field-row">
           <div class="field unit-field" id="vFieldBox">
-            <label for="v">Velocità</label>
+            <div class="label-row">
+              <label for="v">Velocità</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Velocità">?
+                <span class="info-bubble">La tua velocità in bici, media o istantanea, in chilometri orari (km/h).</span>
+              </button>
+            </div>
             <input type="number" id="v" value="28" step="0.1">
             <span class="unit">km/h</span>
           </div>
           <div class="field unit-field" id="targetPowerFieldBox" style="display:none;">
-            <label for="targetPower">Potenza obiettivo</label>
+            <div class="label-row">
+              <label for="targetPower">Potenza obiettivo</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Potenza obiettivo">?
+                <span class="info-bubble">La potenza che vuoi mantenere ai pedali, in watt.</span>
+              </button>
+            </div>
             <input type="number" id="targetPower" value="200" step="1">
             <span class="unit">W</span>
           </div>
+          <div class="field unit-field" id="targetTimeFieldBox" style="display:none;">
+            <div class="label-row">
+              <label for="targetTime">Tempo obiettivo</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Tempo obiettivo">?
+                <span class="info-bubble">Il tempo in cui vuoi completare il tratto, in minuti.</span>
+              </button>
+            </div>
+            <input type="number" id="targetTime" value="20" step="0.5" min="0">
+            <span class="unit">min</span>
+          </div>
           <div class="field unit-field">
-            <label for="slope">Pendenza</label>
+            <div class="label-row">
+              <label for="slope">Pendenza</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Pendenza">?
+                <span class="info-bubble">La pendenza media del tratto, in percentuale (es. 7,5 per una salita al 7,5%). Usa un valore negativo per una discesa.</span>
+              </button>
+            </div>
             <input type="number" id="slope" value="7.5" step="0.1">
             <span class="unit">%</span>
           </div>
         </div>
 
-        <div class="field-row" id="climbDistanceRow" style="display:none;">
+        <div class="field-row">
           <div class="field unit-field">
-            <label for="climbDistance">Lunghezza salita</label>
+            <div class="label-row">
+              <label for="climbDistance">Lunghezza tratto</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Lunghezza tratto">?
+                <span class="info-bubble">La lunghezza del tratto in chilometri. Facoltativa nella modalità normale e in "potenza obiettivo"; obbligatoria in "tempo obiettivo". Se la indichi ottieni anche lavoro e calorie.</span>
+              </button>
+            </div>
             <input type="number" id="climbDistance" value="" step="0.1" min="0" placeholder="opz.">
             <span class="unit">km</span>
           </div>
           <div></div>
         </div>
-        <p class="hint" id="climbDistanceHint" style="display:none; margin-top:-6px;">Lascia vuoto se vuoi solo la velocità, senza calcolare il tempo.</p>
+        <p class="hint" id="distanceHint" style="margin-top:-6px;">Facoltativa: utile per il calcolo del lavoro e delle calorie (rendimento muscolare stimato al 24%).</p>
 
         <div class="field">
-          <label for="travelDir">Direzione di marcia</label>
+          <div class="label-row">
+            <label for="travelDir">Direzione di marcia</label>
+            <button type="button" class="info-tip" aria-label="Informazioni sul campo Direzione di marcia">?
+              <span class="info-bubble">La direzione verso cui stai pedalando, tra i 16 punti cardinali. Serve a capire quanto vento senti in faccia o alle spalle.</span>
+            </button>
+          </div>
           <select id="travelDir">
             <option value="0">N</option>
             <option value="22.5">NNE</option>
@@ -501,12 +605,22 @@
 
         <div class="field-row">
           <div class="field unit-field">
-            <label for="windSpeed">Velocità vento</label>
+            <div class="label-row">
+              <label for="windSpeed">Velocità vento</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Velocità vento">?
+                <span class="info-bubble">L'intensità del vento in chilometri orari, presa da un'app meteo. Metti 0 se non vuoi considerarlo.</span>
+              </button>
+            </div>
             <input type="number" id="windSpeed" value="0" step="0.5" min="0">
             <span class="unit">km/h</span>
           </div>
           <div class="field">
-            <label for="windDir">Direzione vento (da dove soffia)</label>
+            <div class="label-row">
+              <label for="windDir">Direzione vento (da dove soffia)</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Direzione vento">?
+                <span class="info-bubble">Da dove arriva il vento (non verso dove va), presa da un'app meteo o dalla tua percezione. Es: se il vento arriva da nord, scegli N.</span>
+              </button>
+            </div>
             <select id="windDir">
               <option value="0">N</option>
               <option value="22.5">NNE</option>
@@ -539,7 +653,12 @@
 
         <div class="field-row">
           <div class="field unit-field">
-            <label for="bpm">Bpm</label>
+            <div class="label-row">
+              <label for="bpm">Bpm</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Bpm">?
+                <span class="info-bubble">I tuoi battiti cardiaci al minuto in quel momento. Non modifica il calcolo della potenza: serve solo per mostrarti la fascia di frequenza cardiaca nei risultati, se l'hai attivata.</span>
+              </button>
+            </div>
             <input type="number" id="bpm" value="" step="1" placeholder="opz.">
             <span class="unit">bpm</span>
           </div>
@@ -548,24 +667,38 @@
 
         <div class="field-row">
           <div class="field unit-field">
-            <label for="mRider">Massa ciclista</label>
+            <div class="label-row">
+              <label for="mRider">Massa ciclista</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Massa ciclista">?
+                <span class="info-bubble">Il tuo peso corporeo, in chilogrammi.</span>
+              </button>
+            </div>
             <input type="number" id="mRider" value="62" step="0.5">
             <span class="unit">kg</span>
           </div>
           <div class="field unit-field">
-            <label for="mBike">Massa mezzo</label>
+            <div class="label-row">
+              <label for="mBike">Massa mezzo</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Massa mezzo">?
+                <span class="info-bubble">Il peso della bici, comprese eventuali borse o accessori, in chilogrammi.</span>
+              </button>
+            </div>
             <input type="number" id="mBike" value="8.5" step="0.1">
             <span class="unit">kg</span>
           </div>
         </div>
-        <p class="hint" style="margin-top:-8px;">Bpm è solo un promemoria: non entra nel calcolo della potenza.</p>
       </section>
 
       <section class="panel">
         <h2>Attrito — stima assistita</h2>
 
         <div class="field">
-          <label for="crrPreset">Superficie / pneumatici</label>
+          <div class="label-row">
+            <label for="crrPreset">Superficie / pneumatici</label>
+            <button type="button" class="info-tip" aria-label="Informazioni sul campo Superficie / pneumatici">?
+              <span class="info-bubble">Il tipo di fondo stradale e pneumatico su cui pedali di solito: determina quanto attrito di rotolamento considerare nel calcolo.</span>
+            </button>
+          </div>
           <select id="crrPreset">
             <option value="0.003">Asfalto liscio, alta pressione — Crr 0,003</option>
             <option value="0.006" selected>Asfalto medio, qualche imperfezione — Crr 0,006</option>
@@ -576,12 +709,22 @@
           <div class="hint">Range da letteratura tecnica su pneumatici da bici: 0,002 (liscio ottimizzato) – 0,010 su asfalto, più alto su fondi sconnessi.</div>
         </div>
         <div class="field" id="crrManualWrap" style="display:none;">
-          <label for="crrManual">Crr manuale</label>
+          <div class="label-row">
+            <label for="crrManual">Crr manuale</label>
+            <button type="button" class="info-tip" aria-label="Informazioni sul campo Crr manuale">?
+              <span class="info-bubble">Il coefficiente di attrito di rotolamento (Crr) del tuo pneumatico, se lo conosci già da una misura o da una scheda tecnica, al posto della stima da superficie.</span>
+            </button>
+          </div>
           <input type="number" id="crrManual" value="0.006" step="0.001">
         </div>
 
         <div class="field">
-          <label for="kPreset">Posizione in sella</label>
+          <div class="label-row">
+            <label for="kPreset">Posizione in sella</label>
+            <button type="button" class="info-tip" aria-label="Informazioni sul campo Posizione in sella">?
+              <span class="info-bubble">La posizione che tieni abitualmente in bici: determina quanta resistenza aerodinamica (K) considerare nel calcolo.</span>
+            </button>
+          </div>
           <select id="kPreset">
             <option value="0.14">Aerodinamica (basso, prese basse) — K 0,14</option>
             <option value="0.20" selected>Normale su bici da corsa — K 0,20</option>
@@ -591,7 +734,12 @@
           <div class="hint">K ≈ 0,5 · densità aria · CdA. I preset assumono CdA indicativi da 0,23 a 0,40 m² a livello del mare.</div>
         </div>
         <div class="field" id="kManualWrap" style="display:none;">
-          <label for="kManual">K manuale</label>
+          <div class="label-row">
+            <label for="kManual">K manuale</label>
+            <button type="button" class="info-tip" aria-label="Informazioni sul campo K manuale">?
+              <span class="info-bubble">Il coefficiente aerodinamico K, se lo conosci già da una misura o da un test in galleria del vento, al posto della stima da posizione.</span>
+            </button>
+          </div>
           <input type="number" id="kManual" value="0.20" step="0.01">
         </div>
 
@@ -616,7 +764,12 @@
             </div>
             <div class="adv-inputs" id="transInputs" data-active="false">
               <div class="field unit-field">
-                <label for="transEff">Rendimento trasmissione</label>
+                <div class="label-row">
+                  <label for="transEff">Rendimento trasmissione</label>
+                  <button type="button" class="info-tip" aria-label="Informazioni sul campo Rendimento trasmissione">?
+                    <span class="info-bubble">Quanta della potenza che dai ai pedali arriva davvero a terra, al netto delle perdite meccaniche di catena, guarnitura e cassetta. Tipicamente 95-99%.</span>
+                  </button>
+                </div>
                 <input type="number" id="transEff" value="97" step="0.5">
                 <span class="unit">%</span>
               </div>
@@ -635,12 +788,22 @@
             <div class="adv-inputs" id="airInputs" data-active="false">
               <div class="field-row">
                 <div class="field unit-field">
-                  <label for="altitude">Altitudine</label>
+                  <div class="label-row">
+                    <label for="altitude">Altitudine</label>
+                    <button type="button" class="info-tip" aria-label="Informazioni sul campo Altitudine">?
+                      <span class="info-bubble">L'altitudine media del tratto sul livello del mare, in metri. L'aria più rarefatta in quota riduce la resistenza aerodinamica.</span>
+                    </button>
+                  </div>
                   <input type="number" id="altitude" value="0" step="10">
                   <span class="unit">m</span>
                 </div>
                 <div class="field unit-field">
-                  <label for="temperature">Temperatura</label>
+                  <div class="label-row">
+                    <label for="temperature">Temperatura</label>
+                    <button type="button" class="info-tip" aria-label="Informazioni sul campo Temperatura">?
+                      <span class="info-bubble">La temperatura dell'aria, in gradi. Incide leggermente sulla densità dell'aria e quindi sulla resistenza aerodinamica.</span>
+                    </button>
+                  </div>
                   <input type="number" id="temperature" value="15" step="1">
                   <span class="unit">°C</span>
                 </div>
@@ -660,19 +823,34 @@
             <div class="adv-inputs" id="tireInputs" data-active="false">
               <div class="field-row">
                 <div class="field unit-field">
-                  <label for="tirePressure">Pressione</label>
+                  <div class="label-row">
+                    <label for="tirePressure">Pressione</label>
+                    <button type="button" class="info-tip" aria-label="Informazioni sul campo Pressione">?
+                      <span class="info-bubble">La pressione delle tue gomme, in bar.</span>
+                    </button>
+                  </div>
                   <input type="number" id="tirePressure" value="6.5" step="0.1">
                   <span class="unit">bar</span>
                 </div>
                 <div class="field unit-field">
-                  <label for="tireWidth">Larghezza</label>
+                  <div class="label-row">
+                    <label for="tireWidth">Larghezza</label>
+                    <button type="button" class="info-tip" aria-label="Informazioni sul campo Larghezza">?
+                      <span class="info-bubble">La larghezza dello pneumatico in millimetri, stampata sul fianco (es. il 25 in "25-622").</span>
+                    </button>
+                  </div>
                   <input type="number" id="tireWidth" value="25" step="1">
                   <span class="unit">mm</span>
                 </div>
               </div>
 
               <div class="field">
-                <label for="tireDiameter">Diametro ruota</label>
+                <div class="label-row">
+                  <label for="tireDiameter">Diametro ruota</label>
+                  <button type="button" class="info-tip" aria-label="Informazioni sul campo Diametro ruota">?
+                    <span class="info-bubble">Il diametro della ruota, stampato sul fianco dello pneumatico insieme alla larghezza (es. il 622 in "25-622").</span>
+                  </button>
+                </div>
                 <select id="tireDiameter">
                   <option value="622" selected>700c / 29" — 622 mm</option>
                   <option value="584">650b / 27,5" — 584 mm</option>
@@ -682,12 +860,22 @@
                 </select>
               </div>
               <div class="field" id="tireDiameterManualWrap" style="display:none;">
-                <label for="tireDiameterManual">Diametro manuale</label>
+                <div class="label-row">
+                  <label for="tireDiameterManual">Diametro manuale</label>
+                  <button type="button" class="info-tip" aria-label="Informazioni sul campo Diametro manuale">?
+                    <span class="info-bubble">Il diametro della ruota in millimetri (sigla ETRTO), se non è tra le misure standard proposte sopra.</span>
+                  </button>
+                </div>
                 <input type="number" id="tireDiameterManual" value="622" step="1">
               </div>
 
               <div class="field">
-                <label for="tireMount">Tipo di montaggio</label>
+                <div class="label-row">
+                  <label for="tireMount">Tipo di montaggio</label>
+                  <button type="button" class="info-tip" aria-label="Informazioni sul campo Tipo di montaggio">?
+                    <span class="info-bubble">Come è montato lo pneumatico: con camera d'aria, tubeless o tubolare. Incide leggermente sull'attrito di rotolamento.</span>
+                  </button>
+                </div>
                 <select id="tireMount">
                   <option value="1.00" selected>Camera d'aria in butile (standard)</option>
                   <option value="0.97">Camera d'aria in lattice o TPU</option>
@@ -696,7 +884,7 @@
                 </select>
               </div>
 
-              <p class="hint" style="margin-top:-6px;">Riferimento: 6 bar, 25 mm, ruota 622 mm, camera butile (condizioni tipiche dei Crr di base sopra). Larghezza, diametro e pressione sono di norma stampati sul fianco dello pneumatico (es. "25-622"); il fattore per diametro e montaggio è una correzione indicativa, meno consolidata in letteratura di quella per pressione. Valido su asfalto liscio/medio — su sterrato l'effetto reale si comporta diversamente.</p>
+              <p class="hint" style="margin-top:-6px;">Riferimento: 6 bar, 25 mm, ruota 622 mm, camera butile (condizioni tipiche dei Crr di base sopra). Larghezza, diametro e pressione sono di norma stampati sul fianco dello pneumatico (es. "25-622").</p>
             </div>
 
           </div>
@@ -720,14 +908,24 @@
         </div>
         <div class="adv-inputs" id="powerZoneInputs" data-active="false">
           <div class="field">
-            <label for="powerZoneMode">Come la definisci</label>
+            <div class="label-row">
+              <label for="powerZoneMode">Come la definisci</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Come la definisci (potenza)">?
+                <span class="info-bubble">Scegli se stimare le 7 fasce di potenza dalla sola soglia (FTP) o inserirle tutte tu manualmente, se le conosci già.</span>
+              </button>
+            </div>
             <select id="powerZoneMode">
               <option value="ftp" selected>Solo soglia (FTP) — stimo io le fasce</option>
               <option value="manual">Inserisco tutte le fasce</option>
             </select>
           </div>
           <div class="field unit-field" id="ftpWrap">
-            <label for="ftpValue">FTP — soglia di potenza</label>
+            <div class="label-row">
+              <label for="ftpValue">FTP — soglia di potenza</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo FTP">?
+                <span class="info-bubble">La tua soglia di potenza (FTP): la potenza massima che riesci a mantenere per circa un'ora, in watt.</span>
+              </button>
+            </div>
             <input type="number" id="ftpValue" value="200" step="1">
             <span class="unit">W</span>
           </div>
@@ -747,14 +945,24 @@
         </div>
         <div class="adv-inputs" id="hrZoneInputs" data-active="false">
           <div class="field">
-            <label for="hrZoneMode">Come la definisci</label>
+            <div class="label-row">
+              <label for="hrZoneMode">Come la definisci</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Come la definisci (frequenza cardiaca)">?
+                <span class="info-bubble">Scegli se stimare le 5 fasce di frequenza cardiaca dalla sola soglia (LTHR) o inserirle tutte tu manualmente, se le conosci già.</span>
+              </button>
+            </div>
             <select id="hrZoneMode">
               <option value="lthr" selected>Solo soglia (LTHR) — stimo io le fasce</option>
               <option value="manual">Inserisco tutte le fasce</option>
             </select>
           </div>
           <div class="field unit-field" id="lthrWrap">
-            <label for="lthrValue">LTHR — soglia di frequenza cardiaca</label>
+            <div class="label-row">
+              <label for="lthrValue">LTHR — soglia di frequenza cardiaca</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo LTHR">?
+                <span class="info-bubble">La tua frequenza cardiaca di soglia (LTHR): i battiti al minuto al massimo sforzo che riesci a sostenere per circa un'ora. Non è la frequenza massima.</span>
+              </button>
+            </div>
             <input type="number" id="lthrValue" value="165" step="1">
             <span class="unit">bpm</span>
           </div>
@@ -780,6 +988,8 @@
           <div class="stat"><div class="k">W/KG</div><div class="v" id="statWkg">—</div></div>
           <div class="stat"><div class="k">SALITA+ROT.</div><div class="v" id="statGrav">—</div></div>
           <div class="stat"><div class="k">AERODIN.</div><div class="v" id="statAero">—</div></div>
+          <div class="stat" id="statWorkBox" style="display:none;"><div class="k">LAVORO</div><div class="v" id="statWork">—</div></div>
+          <div class="stat" id="statKcalBox" style="display:none;"><div class="k">CALORIE</div><div class="v" id="statKcal">—</div></div>
         </div>
 
         <div class="breakdown" id="breakdown" style="display:none;">
@@ -808,11 +1018,17 @@
 
         <div class="chart-wrap" id="chartWrap" style="display:none;">
           <div class="field" style="margin-bottom:10px;">
-            <label for="chartParam">Potenza in funzione di</label>
+            <div class="label-row">
+              <label for="chartParam">Potenza in funzione di</label>
+              <button type="button" class="info-tip" aria-label="Informazioni sul campo Potenza in funzione di">?
+                <span class="info-bubble">Scegli quale parametro mettere sull'asse orizzontale del grafico, per vedere come cambia la potenza al variare solo di quello, a parità degli altri.</span>
+              </button>
+            </div>
             <select id="chartParam">
               <option value="pendenza" selected>Pendenza (%)</option>
               <option value="massaMezzo">Massa del mezzo (kg)</option>
               <option value="kAero">Posizione aerodinamica (K)</option>
+              <option value="crr">Coefficiente di rotolamento (Crr)</option>
               <option value="pressione">Pressione pneumatico (bar)</option>
               <option value="velocita">Velocità (km/h)</option>
             </select>
@@ -825,9 +1041,7 @@
     </div>
   </div>
 
-  <footer>
-    Modello: P = (m_ciclista+m_mezzo)·g·v·[sin(atan(pendenza/100)) + Crr] + K·(v_vento_effettivo+v)²·v — velocità in m/s. Il vento effettivo è la proiezione del vento reale sulla direzione di marcia (vento contrario/favore); la componente laterale è mostrata solo a titolo informativo, il modello non simula la resistenza dovuta al vento laterale. Se attiva, la correzione da pneumatico scala il Crr scelto come Crr·√(6/P)·(25/larghezza)^0,3·(622/diametro)^0,5·fattore montaggio — approssimazione valida su asfalto liscio/medio, non su sterrato; il fattore di montaggio (camera/tubeless/tubolare) è indicativo, con meno letteratura consolidata di quello per pressione. Le stime di Crr e K sono indicative (letteratura tecnica), non misure dirette del tuo mezzo.
-  </footer>
+
 
 </div>
 
@@ -857,15 +1071,28 @@
   $('powerZoneToggle').addEventListener('change', calculate);
   $('hrZoneToggle').addEventListener('change', calculate);
 
-  $('inverseToggle').addEventListener('change', () => {
+  function syncModeUI(){
     const inv = $('inverseToggle').checked;
-    $('vFieldBox').style.display = inv ? 'none' : 'block';
-    $('targetPowerFieldBox').style.display = inv ? 'block' : 'none';
-    $('climbDistanceRow').style.display = inv ? 'grid' : 'none';
-    $('climbDistanceHint').style.display = inv ? 'block' : 'none';
-    $('calcBtn').textContent = inv ? 'Calcola velocità' : 'Calcola potenza';
-    calculate();
-  });
+    const sub = $('inverseSubMode').value;
+
+    $('inverseSubModeWrap').style.display = inv ? 'block' : 'none';
+    $('vFieldBox').style.display = (!inv) ? 'block' : 'none';
+    $('targetPowerFieldBox').style.display = (inv && sub === 'power') ? 'block' : 'none';
+    $('targetTimeFieldBox').style.display = (inv && sub === 'time') ? 'block' : 'none';
+
+    if(inv && sub === 'time'){
+      $('calcBtn').textContent = 'Calcola potenza';
+      $('distanceHint').textContent = 'Obbligatoria in questa modalità: serve per ricavare la velocità dal tempo che vuoi impiegare.';
+    } else if(inv){
+      $('calcBtn').textContent = 'Calcola velocità';
+      $('distanceHint').textContent = 'Facoltativa: utile per il calcolo del tempo, oltre a lavoro e calorie (rendimento muscolare stimato al 24%).';
+    } else {
+      $('calcBtn').textContent = 'Calcola potenza';
+      $('distanceHint').textContent = 'Facoltativa: utile per il calcolo del lavoro e delle calorie (rendimento muscolare stimato al 24%).';
+    }
+  }
+  $('inverseToggle').addEventListener('change', () => { syncModeUI(); calculate(); });
+  $('inverseSubMode').addEventListener('change', () => { syncModeUI(); calculate(); });
 
   // --- Fasce di sforzo (modello di Coggan) ---
   const POWER_ZONES = [
@@ -1199,6 +1426,7 @@
     pendenza:   { label: 'Pendenza',            unit: '%',    dec: 1 },
     massaMezzo: { label: 'Massa mezzo',         unit: 'kg',   dec: 1 },
     kAero:      { label: 'K aerodinamico',      unit: '',     dec: 3 },
+    crr:        { label: 'Crr',                 unit: '',     dec: 3 },
     pressione:  { label: 'Pressione pneumatico', unit: 'bar', dec: 1 },
     velocita:   { label: 'Velocità',            unit: 'km/h', dec: 0 }
   };
@@ -1208,6 +1436,7 @@
       case 'pendenza':   return [Math.max(-5, base.slope - 10), base.slope + 10];
       case 'massaMezzo': return [Math.max(3, base.mBike - 4), base.mBike + 4];
       case 'kAero':      return [base.K * 0.6, base.K * 1.4];
+      case 'crr':        return [Math.max(0.0005, base.crr * 0.4), base.crr * 2];
       case 'pressione':  return [Math.max(2, base.pressure - 3), base.pressure + 3];
       case 'velocita':
       default:           return [Math.max(1, base.v - 15), base.v + 15];
@@ -1220,6 +1449,7 @@
     else if(param === 'pendenza') slope = x;
     else if(param === 'massaMezzo') mBike = x;
     else if(param === 'kAero') K = x;
+    else if(param === 'crr') crr = x;
     else if(param === 'pressione') crr = getCrr({ pressure: x });
     const r = computePower(v, base.wind, slope, base.mRider, mBike, crr, K);
     return r.pWheel / base.effFactor;
@@ -1342,6 +1572,7 @@
 
   function calculate(){
     const inverseMode = $('inverseToggle').checked;
+    const subMode = inverseMode ? $('inverseSubMode').value : null;
     const wind = computeWindComponent().headwind;
     const slope = parseFloat($('slope').value) || 0;
     const mRider = parseFloat($('mRider').value);
@@ -1354,14 +1585,29 @@
 
     let v, r, pPedals, timeHours = null;
 
-    if(inverseMode){
+    function bail(msg){
+      showReadoutPlaceholder(msg);
+      $('statGrid').style.display = 'none';
+      $('breakdown').style.display = 'none';
+      $('zonesResult').style.display = 'none';
+      $('chartWrap').style.display = 'none';
+    }
+
+    if(inverseMode && subMode === 'time'){
+      const dist = parseFloat($('climbDistance').value);
+      const targetMin = parseFloat($('targetTime').value);
+      if(!dist || !targetMin || !mRider){
+        bail('Inserisci lunghezza del tratto, tempo obiettivo e massa ciclista.');
+        return;
+      }
+      timeHours = targetMin / 60;
+      v = dist / timeHours;
+      r = computePower(v, wind, slope, mRider, mBike, crr, K);
+      pPedals = r.pWheel / effFactor;
+    } else if(inverseMode){
       const targetPower = parseFloat($('targetPower').value);
       if(!targetPower || !mRider){
-        showReadoutPlaceholder('Inserisci almeno la potenza obiettivo e la massa ciclista.');
-        $('statGrid').style.display = 'none';
-        $('breakdown').style.display = 'none';
-        $('zonesResult').style.display = 'none';
-        $('chartWrap').style.display = 'none';
+        bail('Inserisci almeno la potenza obiettivo e la massa ciclista.');
         return;
       }
       const targetPWheel = targetPower * effFactor;
@@ -1369,26 +1615,28 @@
       r = computePower(v, wind, slope, mRider, mBike, crr, K);
       pPedals = targetPower;
       const dist = parseFloat($('climbDistance').value);
-      if(dist > 0 && v > 0) timeHours = dist / v;
+      timeHours = (dist > 0 && v > 0) ? dist / v : null;
     } else {
       v = parseFloat($('v').value);
       if(!v || !mRider){
-        showReadoutPlaceholder('Inserisci almeno velocità e massa ciclista.');
-        $('statGrid').style.display = 'none';
-        $('breakdown').style.display = 'none';
-        $('zonesResult').style.display = 'none';
-        $('chartWrap').style.display = 'none';
+        bail('Inserisci almeno velocità e massa ciclista.');
         return;
       }
       r = computePower(v, wind, slope, mRider, mBike, crr, K);
       pPedals = r.pWheel / effFactor;
+      const dist = parseFloat($('climbDistance').value);
+      timeHours = (dist > 0 && v > 0) ? dist / v : null;
     }
 
-    if(inverseMode){
+    if(inverseMode && subMode === 'time'){
+      animateReadout(pPedals, 0, 'W', 'power');
+      $('readoutSecondary').style.display = 'block';
+      $('readoutSecondary').innerHTML = `Velocità: <strong>${fmt(v,1)} km/h</strong>`;
+    } else if(inverseMode){
       animateReadout(v, 1, 'km/h', 'velocity');
       if(timeHours !== null){
         $('readoutSecondary').style.display = 'block';
-        $('readoutSecondary').innerHTML = `Tempo sulla salita: <strong>${fmtTime(timeHours)}</strong>`;
+        $('readoutSecondary').innerHTML = `Tempo sul tratto: <strong>${fmtTime(timeHours)}</strong>`;
       } else {
         $('readoutSecondary').style.display = 'none';
       }
@@ -1402,6 +1650,19 @@
     $('statGrav').textContent = fmt(r.pGrav,0) + ' W';
     $('statAero').textContent = fmt(r.pAero,0) + ' W';
 
+    if(timeHours !== null){
+      const workKJ = pPedals * (timeHours*3600) / 1000;
+      const MUSCLE_EFFICIENCY = 0.24; // rendimento muscolare medio stimato (18-26% in letteratura sportiva)
+      const kcal = workKJ * 0.239 / MUSCLE_EFFICIENCY;
+      $('statWorkBox').style.display = 'block';
+      $('statKcalBox').style.display = 'block';
+      $('statWork').textContent = fmt(workKJ,0) + ' kJ';
+      $('statKcal').textContent = fmt(kcal,0) + ' kcal';
+    } else {
+      $('statWorkBox').style.display = 'none';
+      $('statKcalBox').style.display = 'none';
+    }
+
     $('breakdown').style.display = 'block';
     $('bAlpha').textContent = fmt(r.alphaDeg,2) + '°';
     $('bEff').textContent = transOn ? eff.toFixed(1)+'%' : '100%';
@@ -1414,7 +1675,7 @@
     drawChart({
       v, wind, slope, mRider, mBike, crr, K, effFactor,
       pressure: pressureVal,
-      currentX: { pendenza: slope, massaMezzo: mBike, kAero: K, pressione: pressureVal, velocita: v }
+      currentX: { pendenza: slope, massaMezzo: mBike, kAero: K, crr: crr, pressione: pressureVal, velocita: v }
     });
   }
 
@@ -1437,9 +1698,23 @@
     inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ calculate(); } });
   });
 
+  document.querySelectorAll('.info-tip').forEach(tip=>{
+    tip.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      e.preventDefault();
+      const wasOpen = tip.classList.contains('open');
+      document.querySelectorAll('.info-tip.open').forEach(t=>t.classList.remove('open'));
+      if(!wasOpen) tip.classList.add('open');
+    });
+  });
+  document.addEventListener('click', ()=>{
+    document.querySelectorAll('.info-tip.open').forEach(t=>t.classList.remove('open'));
+  });
+
   // primo calcolo con i valori di default
   updateWindHint();
   renderCompass();
+  syncModeUI();
   calculate();
 })();
 </script>
